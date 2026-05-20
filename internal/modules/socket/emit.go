@@ -1,26 +1,54 @@
 package socket
 
 import( 
+	"encoding/json"
 	"github.com/gorilla/websocket"
+	"sgcodes7471/damsharaz.io-server/internal/pkg"
+	"sgcodes7471/damsharaz.io-server/internal/db"
+	"sgcodes7471/damsharaz.io-server/internal/types"
 )
 
-/**
-	START event emit
 
-	1. pull the room objet from redis
-	2. check for den conn in the locally stored connections
-	3. if found then choose a random movie name from the list 
-	4. send Den that movie name in the format
- 	5. to others send the name of Den
+func Emit(conn *websocket.Conn , msgObj string) (string , error) {
+	event , author , msg , err := pkg.Parse_Payload(msgObj);
 
+	if err != nil {
+		return "" , err
+	}
 
-	LEAVE or DISCONNECT 
+	switch event {
+	case "START" :
+		roomId := msg
+		roomObjectData , err := db.Redis_Get(roomId + "_data");
+		if err != nil {
+			return "" , err;
+		}
 
-	1. clear from the Room_conections in memory if conn exists
-	2. else publish event
+		var roomObject type.Room_Object;
+		err := json.Unmarshal(roomObjectData , &roomObject);
 
-*/
+		if err != nil {
+			return "" , err;
+		}
 
-func Emit(conn *websocket.Conn) error {
+		var den_client types.Client_Object;
+		err = json.Unmarshal(roomObject.Den , &den_client);
+
+		if err != nil {
+			return "" , err;
+		}
+
+		if den_client.Conn === conn {
+			payload = author + "/r/n" + event + "/r/n" + roomObject.Answer + "/r/n";
+		} else {
+			payload = author + "/r/n" + event + "/r/n" + Den.name + "/r/n";
+		}
+
+		return payload , nil;
+
+	default :
+		return Errorf("Not a Valid Event")
+	}
+
 	return nil
 }

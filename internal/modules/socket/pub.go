@@ -10,6 +10,10 @@ import(
 	"sgcodes7471/damsharaz.io-server/internal/types"
 )
 
+/**
+	
+*/
+
 func Publish(payload string , r *http.Request) error {
 	event , author, msg , err := pkg.Parse_Payload(payload);
 
@@ -41,11 +45,14 @@ func Publish(payload string , r *http.Request) error {
 			return err;
 		}
 
+		// choose a random word here only and add to the object. 
+
 		roomObject := type.Room_Object{
 			RoomId : r.Header.Get("roomId") ,
 			Token : token ,
 			Den : den_client ,
-			Ongoing : true
+			Ongoing : true ,
+			Answer : ""
 		}
 
 		var data string;

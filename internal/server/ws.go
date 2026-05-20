@@ -47,6 +47,7 @@ func WSServer(w http.ResponseWriter , r *http.Request) {
 		Token : value ,
 		Den : types.Client_Object{} ,
 		Ongoing : false ,
+		Answer : "" , 
 	};
 
 	data , err := json.Marshal(Room);
