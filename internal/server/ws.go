@@ -10,12 +10,19 @@ import(
 	"github.com/redis/go-redis/v9"
 )
 
-var Rooms_Connections = make(map[string][]types.Client_Object);
+var Rooms_Connections = make(
+	map[string]map[string]types.Client_Object,
+)
+
+func Get_Clients_From_Id(roomId string, clientId string) types.Client_Object {
+	return Rooms_Connections[roomId][clientId];
+}
 
 var upgrader = websocket.Upgrader{};
 
 func WSServer(w http.ResponseWriter , r *http.Request) {
 	roomId := r.Header.Get("roomId");
+	clientId := r.Header.Get("clientId");
 	name := r.URL.Query().Get("name");
 
 	if roomId == "" || name == "" {
@@ -45,9 +52,6 @@ func WSServer(w http.ResponseWriter , r *http.Request) {
 	var Room = types.Room_Object{
 		RoomId : roomId ,
 		Token : value ,
-		Den : types.Client_Object{} ,
-		Ongoing : false ,
-		Answer : "" , 
 	};
 
 	data , err := json.Marshal(Room);
@@ -86,21 +90,19 @@ func WSServer(w http.ResponseWriter , r *http.Request) {
 	ch := sub.Channel();
 
 	client := types.Client_Object{
+		Id : clientId ,
 		Conn : conn ,
 		Name : name ,
 	}
 
-	Rooms_Connections[roomId] = append(Rooms_Connections[roomId] , client);
-
-	data , err = json.Marshal(client);
-
-	if err != nil {
-		pkg.Api_Error("Error in Serializing Client Object : " + err.Error() , "GET /ws" , 500 , w);
-		return
+	if Rooms_Connections[roomId] == nil {
+		Room_Connections[roomId] = make(map[string]types.Client_Object);
 	}
 
-	key = roomId + "_member";
-	if err := db.Redis_Client.SAdd(db.CTX , key , data).Err(); err != nil {
+	Rooms_Connections[roomId][clientId] = client;
+
+	key = roomId + "_members";
+	if err := db.Redis_Client.SAdd(db.CTX , key , clientId).Err(); err != nil {
 		pkg.Api_Error("Error in adding member to Redis : " + err.Error() , "GET /ws" , 500 , w);
 		return
 	}

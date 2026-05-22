@@ -10,9 +10,6 @@ import(
 	"sgcodes7471/damsharaz.io-server/internal/types"
 )
 
-/**
-	
-*/
 
 func Publish(payload string , r *http.Request) error {
 	event , author, msg , err := pkg.Parse_Payload(payload);
@@ -32,25 +29,18 @@ func Publish(payload string , r *http.Request) error {
 			return fmt.Errorf("Unauthorized access");
 		}
 
-		var den_client_string string;
-		den_client_string , err = db.Redis_Random(roomId) 
+		var den_client_Id string;
+		den_client_Id , err = db.Redis_Random(roomId + "_members") ;
 		if err != nil {
 			return err;
 		} 
 
-		var den_client types.Client_Object;
-		err = json.Unmarshal(den_client_string , &den_client);
-
-		if err != nil {
-			return err;
-		}
-
 		// choose a random word here only and add to the object. 
 
-		roomObject := type.Room_Object{
+		roomObject := types.Room_Object{
 			RoomId : r.Header.Get("roomId") ,
 			Token : token ,
-			Den : den_client ,
+			Den : den_client_Id ,
 			Ongoing : true ,
 			Answer : ""
 		}

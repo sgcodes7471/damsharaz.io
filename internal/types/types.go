@@ -5,6 +5,7 @@ import(
 )
 
 type Client_Object struct {
+	Id string
 	Conn *websocket.Conn 
 	Name string
 }
@@ -12,10 +13,9 @@ type Client_Object struct {
 type Room_Object struct {
 	RoomId string 
 	Token string
-	Den Client_Object
+	Den string
 	Ongoing bool
 	Answer string
-	// add a new field of Answer which will not be compusolory
 }
 
 
