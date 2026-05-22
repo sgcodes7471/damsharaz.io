@@ -37,7 +37,7 @@ func Emit(conn *websocket.Conn , msgObj string) (string , error) {
 		if den_client.Conn === conn {
 			payload = author + "/r/n" + event + "/r/n" + roomObject.Answer + "/r/n";
 		} else {
-			payload = author + "/r/n" + event + "/r/n" + Den.name + "/r/n";
+			payload = author + "/r/n" + event + "/r/n" + den_client.name + "/r/n";
 		}
 
 		return payload , nil;
