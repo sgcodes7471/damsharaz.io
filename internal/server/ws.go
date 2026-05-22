@@ -25,7 +25,7 @@ func WSServer(w http.ResponseWriter , r *http.Request) {
 	clientId := r.Header.Get("clientId");
 	name := r.URL.Query().Get("name");
 
-	if roomId == "" || name == "" {
+	if roomId == "" || name == "" || clientId = "" {
 		pkg.Api_Error("Required Query Params missing in /ws" , "GET /ws" , 400 , w);
 		return
 	}
@@ -48,7 +48,7 @@ func WSServer(w http.ResponseWriter , r *http.Request) {
 		return
 	}
 
-	
+	// atleast one person needs to join the room within 1hr. of room creation to prevent expiration (not neccesarily admin)
 	var Room = types.Room_Object{
 		RoomId : roomId ,
 		Token : value ,
@@ -89,17 +89,16 @@ func WSServer(w http.ResponseWriter , r *http.Request) {
 
 	ch := sub.Channel();
 
-	client := types.Client_Object{
-		Id : clientId ,
-		Conn : conn ,
-		Name : name ,
-	}
-
+	
 	if Rooms_Connections[roomId] == nil {
 		Room_Connections[roomId] = make(map[string]types.Client_Object);
 	}
 
-	Rooms_Connections[roomId][clientId] = client;
+	Rooms_Connections[roomId][clientId] = types.Client_Object{
+		Id : clientId ,
+		Conn : conn ,
+		Name : name ,
+	};
 
 	key = roomId + "_members";
 	if err := db.Redis_Client.SAdd(db.CTX , key , clientId).Err(); err != nil {

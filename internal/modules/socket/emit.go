@@ -19,7 +19,7 @@ func Emit(conn *websocket.Conn , msgObj string) (string , error) {
 
 	switch event {
 	case "START" :
-		roomId := msg
+		roomId := msg[:7]
 		roomObjectData , err := db.Redis_Get(roomId + "_data");
 		if err != nil {
 			return "" , err;

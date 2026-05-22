@@ -4,6 +4,7 @@ import(
 	"fmt"
 	"net/http"
 	"encoding/json"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/websocket"
 	"sgcodes7471/damsharaz.io-server/internal/pkg"
 	"sgcodes7471/damsharaz.io-server/internal/db"
@@ -20,12 +21,19 @@ func Publish(payload string , r *http.Request) error {
 
 	switch event {
 	case "START" :
-		token, err := r.Cookie("token");
-		if err != nil {
+		roomId = strings.TrimSpace(msg[:7]);
+		token = strings.TrimSpace(msg[7:]);
+
+		if token == "" {
 			return fmt.Errorf("Unauthorized access");
 		}
 
-		if token["roomId"] != r.Header.Get("roomId") {
+		token_claims , err := pkg.VerifyToken(token);
+		if err != nil {
+			return err;
+		}
+
+		if token_claims["roomId"] != roomId {
 			return fmt.Errorf("Unauthorized access");
 		}
 
@@ -35,14 +43,16 @@ func Publish(payload string , r *http.Request) error {
 			return err;
 		} 
 
-		// choose a random word here only and add to the object. 
+		// choose a random word here .
+		
+		var ans string = "";
 
 		roomObject := types.Room_Object{
 			RoomId : r.Header.Get("roomId") ,
 			Token : token ,
 			Den : den_client_Id ,
 			Ongoing : true ,
-			Answer : ""
+			Answer : ans
 		}
 
 		var data string;
